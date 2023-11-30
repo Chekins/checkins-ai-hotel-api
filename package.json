@@ -2,12 +2,12 @@
   "name": "checkins_ai_hotel_api",
   "version": "1.0.0",
   "description": "middleware for the checkins hotel api",
-  "main": "index.js",
+  "main": "app.js",
   "engines": {
     "node": "18.*"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
