@@ -5,6 +5,7 @@ const moment = require("moment");
 
 const priceDroppingValue = 0.88;
 const priceReAddedValue = 0.20;
+const priceAddingForPublishedRate = 1.10;
 
 //formatting the date to YYYY-MM-DD format to match the API requirement
 const formatDate = (date) => {
@@ -181,7 +182,7 @@ exports.initalCallOfZentrumhub = async (req, res) => {
                   rate: {
                     ...hotel.rate,
                     dailyTotalRate: Math.ceil(pricePerRoomPerNight),
-                    dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish),
+                    dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish * priceAddingForPublishedRate),
                     totalTripRate: Math.ceil(pricefortotalrooms),
                   },
                 };
@@ -247,7 +248,7 @@ exports.initalCallOfZentrumhub = async (req, res) => {
                 rate: {
                   ...hotel.rate,
                   dailyTotalRate: Math.ceil(pricePerRoomPerNight),
-                  dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish),
+                  dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish * priceAddingForPublishedRate),
                   totalTripRate: Math.ceil(pricefortotalrooms),
                 },
               };
@@ -482,7 +483,7 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
                   rate: {
                     ...hotel.rate,
                     dailyTotalRate: Math.ceil(pricePerRoomPerNight),
-                    dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish),
+                    dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish * priceAddingForPublishedRate),
                     totalTripRate: Math.ceil(pricefortotalrooms),
                   },
                 };
@@ -546,7 +547,7 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
                 rate: {
                   ...hotel.rate,
                   dailyTotalRate: Math.ceil(pricePerRoomPerNight),
-                  dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish),
+                  dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish * priceAddingForPublishedRate),
                   totalTripRate: Math.ceil(pricefortotalrooms),
                 },
               };
@@ -839,7 +840,7 @@ exports.nextAsyncHotelData = async (req, res) => {
             rate: {
               ...hotel.rate,
               dailyTotalRate: Math.ceil(pricePerRoomPerNight),
-              dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish),
+              dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish * priceAddingForPublishedRate),
               totalTripRate: Math.ceil(pricefortotalrooms),
             },
           };
@@ -1044,7 +1045,7 @@ exports.initRoomAndRatesToken = async (req, res) => {
           // rate.baseRate = Math.ceil(newBaseRate);
 
           rate.dailyTotalRate = Math.ceil(pricePerRoomPerNight);
-          rate.dailyPublishedRate = Math.ceil(pricePerRoomPerNightPublish);
+          rate.dailyPublishedRate = Math.ceil(pricePerRoomPerNightPublish * priceAddingForPublishedRate);
         });
 
         // res.status(200).json(data);
@@ -1184,7 +1185,7 @@ exports.initRoomAndRatesTokenRateHawk = async (req, res) => {
           // rate.baseRate = Math.ceil(newBaseRate);
 
           rate.dailyTotalRate = Math.ceil(pricePerRoomPerNight);
-          rate.dailyPublishedRate = Math.ceil(pricePerRoomPerNightPublish);
+          rate.dailyPublishedRate = Math.ceil(pricePerRoomPerNightPublish * priceAddingForPublishedRate);
         });
 
         // res.status(200).json(data);
@@ -1304,7 +1305,7 @@ exports.initalCallOfZentrumhubHotelBeds = async (req, res) => {
           const pricePerRoomPerNightPublish = rate.publishedRate / diffInDays;
           // Modify totalRate and publishedRate
           rate.dailyTotalRate = Math.ceil(pricePerRoomPerNight);
-          rate.dailyPublishedRate = Math.ceil(pricePerRoomPerNightPublish);
+          rate.dailyPublishedRate = Math.ceil(pricePerRoomPerNightPublish * priceAddingForPublishedRate);
         });
 
         // res.status(200).json(data);
@@ -1388,7 +1389,7 @@ exports.priceCheckingRecommendation = async (req, res) => {
 
          // Calculate the new total rate with the priceDroppingValue factor
           const newTotalRate = rate.totalRate * priceDroppingValue;
-          const newBaseRate = rate.baseRate * priceDroppingValue;
+          const newBaseRate = rate.baseRate * priceAddingForPublishedRate;
 
           // Calculate the fee as the difference between the original total rate and the new total rate
           const feeAmount = rate.totalRate * priceReAddedValue;
@@ -1406,7 +1407,7 @@ exports.priceCheckingRecommendation = async (req, res) => {
 
           // Modify totalRate and publishedRate
           rate.totalRate = Math.ceil(newTotalRate);
-          // rate.baseRate = Math.ceil(newBaseRate);
+          rate.baseRate = Math.ceil(newBaseRate);
         });
 
         res.status(200).json(data);
