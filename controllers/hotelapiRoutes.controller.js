@@ -171,7 +171,7 @@ exports.initalCallOfZentrumhub = async (req, res) => {
                 }
                 // Calculate the new total rate with the priceDroppingValue factor
                 const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
-                const newBaseRate = hotel.rate.baseRate * priceReAddedValue;
+                const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
 
                 // Calculate the fee as the difference between the original total rate and the new total rate
                 const feeAmount =
@@ -237,7 +237,7 @@ exports.initalCallOfZentrumhub = async (req, res) => {
               // Modify totalRate and publishedRate
               // Calculate the new total rate with the priceDroppingValue factor
               const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
-              const newBaseRate = hotel.rate.baseRate * priceReAddedValue;
+              const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
 
               // Calculate the fee as the difference between the original total rate and the new total rate
               const feeAmount =
@@ -830,7 +830,7 @@ exports.nextAsyncHotelData = async (req, res) => {
           // Modify totalRate and publishedRate
           // Calculate the new total rate with the priceDroppingValue factor
           const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
-          const newBaseRate = hotel.rate.baseRate * priceReAddedValue;
+          const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
 
           // Calculate the fee as the difference between the original total rate and the new total rate
           const feeAmount = hotel.rate.totalRate * priceReAddedValue;
@@ -1038,7 +1038,7 @@ exports.initRoomAndRatesToken = async (req, res) => {
 
           // Calculate the new total rate with the priceDroppingValue factor
           const newTotalRate = rate.totalRate * priceDroppingValue;
-          const newBaseRate = rate.baseRate * priceReAddedValue;
+          const newBaseRate = rate.baseRate * priceIncreaseValue;
 
           // Calculate the fee as the difference between the original total rate and the new total rate
           const feeAmount = rate.totalRate * priceReAddedValue;
@@ -1179,7 +1179,7 @@ exports.initRoomAndRatesTokenRateHawk = async (req, res) => {
 
           // Calculate the new total rate with the priceDroppingValue factor
           const newTotalRate = rate.totalRate * priceDroppingValue;
-          const newBaseRate = rate.baseRate * priceReAddedValue;
+          const newBaseRate = rate.baseRate * priceIncreaseValue;
 
           // Calculate the fee as the difference between the original total rate and the new total rate
           const feeAmount = rate.totalRate * priceReAddedValue;
@@ -1404,7 +1404,7 @@ exports.priceCheckingRecommendation = async (req, res) => {
 
          // Calculate the new total rate with the priceDroppingValue factor
           const newTotalRate = rate.totalRate * priceDroppingValue;
-          const newBaseRate = rate.baseRate * priceReAddedValue;
+          const newBaseRate = rate.baseRate * priceIncreaseValue;
 
           // Calculate the fee as the difference between the original total rate and the new total rate
           const feeAmount = rate.totalRate * priceReAddedValue;
