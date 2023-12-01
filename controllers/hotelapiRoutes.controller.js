@@ -6,6 +6,21 @@ const moment = require("moment");
 const priceDroppingValue = 0.88;
 const priceReAddedValue = 0.20;
 
+const NODE_ENV="production"
+const REACT_APP_URL="https://www.checkins.ai"
+const ZENTRUMHUB_API_URL="https://nexus.prod.zentrumhub.com/api/hotel"
+const ZENTRUMHUB_API_KEY="e7813f66-2ac8-4f64-a7cd-6ab58e0e5194"
+const ZENTRUMHUB_ACCOUNT_ID="chekins-live-account"
+const ZENTRUMHUB_LIVE_CHANNEL_ID="ci-live-channel"
+const ZENTRUMHUB_RH_CHANNEL_ID="ci-ratehawklive-channel"
+const ZENTRUMHUB_WEB_CHANNEL_ID="Ci-weblive-channel"
+const ZENTRUMHUB_TB_CHANNEL_ID="ci-tbointllive-channel"
+const ZENTRUMHUB_HB_CHANNEL_ID="ci-hbb2clive-channel"
+const ZENTRUMHUB_COUNTRY_OF_RESIDENCE="US"
+const ZENTRUMHUB_NATIONALITY="US"
+const ZENTRUMHUB_CULTURE="en-us"
+const TRIP_ADVISOR_API_URL="https://hotelfinderchekins.com"
+
 //formatting the date to YYYY-MM-DD format to match the API requirement
 const formatDate = (date) => {
   const momentDate = moment(date).utcOffset(0, true);
@@ -25,8 +40,8 @@ const generateHeaders = (ipAddress, correlationId) => {
   return {
     "Content-Type": "application/json; charset=utf-8",
     "Accept-Encoding": "gzip,deflate,compress",
-    apiKey: process.env.ZENTRUMHUB_API_KEY,
-    accountId: process.env.ZENTRUMHUB_ACCOUNT_ID,
+    apiKey: ZENTRUMHUB_API_KEY,
+    accountId: ZENTRUMHUB_ACCOUNT_ID,
     "customer-ip": ipAddress,
     correlationId: correlationId,
   };
@@ -59,10 +74,10 @@ exports.initalCallOfZentrumhub = async (req, res) => {
   const totalRoomNights = calculateTotalRoomNights(startDate, endDate, rooms);
 
   const payload = {
-    channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+    channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
     segmentId: null,
     currency: currency,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     checkIn: outputDate,
     checkOut: outputDate2,
     occupancies: occupancies,
@@ -75,17 +90,17 @@ exports.initalCallOfZentrumhub = async (req, res) => {
     polygonalRegion: null,
     multiPolygonalRegion: null,
     hotelIds: null,
-    nationality: process.env.ZENTRUMHUB_NATIONALITY,
-    countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
     destinationCountryCode: null,
     filterBy: null,
   };
 
   const payloadPolygonal = {
-    channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+    channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
     segmentId: null,
     currency: currency,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     checkIn: outputDate,
     checkOut: outputDate2,
     occupancies: occupancies,
@@ -97,8 +112,8 @@ exports.initalCallOfZentrumhub = async (req, res) => {
     },
     multiPolygonalRegion: null,
     hotelIds: null,
-    nationality: process.env.ZENTRUMHUB_NATIONALITY,
-    countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
     destinationCountryCode: null,
     filterBy: null,
   };
@@ -113,7 +128,7 @@ exports.initalCallOfZentrumhub = async (req, res) => {
 
     await axios
       .get(
-        `${process.env.ZENTRUMHUB_API_URL}/availability/async/${token}/results`,
+        `${ZENTRUMHUB_API_URL}/availability/async/${token}/results`,
         { headers: headers }
       )
       .then((response) => {
@@ -280,7 +295,7 @@ exports.initalCallOfZentrumhub = async (req, res) => {
   const initialCall = async () => {
     try {
       const zentrumhubResponse = await axios.post(
-        `${process.env.ZENTRUMHUB_API_URL}/availability/init`,
+        `${ZENTRUMHUB_API_URL}/availability/init`,
         payload,
         {
           headers: headers,
@@ -359,10 +374,10 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
   const totalRoomNights = calculateTotalRoomNights(startDate, endDate, rooms);
 
   const payload = {
-    channelId: process.env.ZENTRUMHUB_WEB_CHANNEL_ID,
+    channelId: ZENTRUMHUB_WEB_CHANNEL_ID,
     segmentId: null,
     currency: currency,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     checkIn: outputDate,
     checkOut: outputDate2,
     occupancies: occupancies,
@@ -375,17 +390,17 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
     polygonalRegion: null,
     multiPolygonalRegion: null,
     hotelIds: null,
-    nationality: process.env.ZENTRUMHUB_NATIONALITY,
-    countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
     destinationCountryCode: null,
     filterBy: null,
   };
 
   const payloadPolygonal = {
-    channelId: process.env.ZENTRUMHUB_WEB_CHANNEL_ID,
+    channelId: ZENTRUMHUB_WEB_CHANNEL_ID,
     segmentId: null,
     currency: currency,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     checkIn: outputDate,
     checkOut: outputDate2,
     occupancies: occupancies,
@@ -397,8 +412,8 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
     },
     multiPolygonalRegion: null,
     hotelIds: null,
-    nationality: process.env.ZENTRUMHUB_NATIONALITY,
-    countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
     destinationCountryCode: null,
     filterBy: null,
   };
@@ -413,7 +428,7 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
 
     await axios
       .get(
-        `${process.env.ZENTRUMHUB_API_URL}/availability/async/${token}/results`,
+        `${ZENTRUMHUB_API_URL}/availability/async/${token}/results`,
         { headers: headers }
       )
       .then((response) => {
@@ -579,7 +594,7 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
   const initialCall = async () => {
     try {
       const zentrumhubResponse = await axios.post(
-        `${process.env.ZENTRUMHUB_API_URL}/availability/init`,
+        `${ZENTRUMHUB_API_URL}/availability/init`,
         payload,
         {
           headers: headers,
@@ -648,10 +663,10 @@ exports.basicHotelContent = async (req, res) => {
   console.log("line 15", lat, long, ipAddress, correlationId);
 
   const payload = {
-    channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+    channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
     destinationCountryCode: null,
     filterBy: null,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     contentFields: ["basic", "masterfacilities"],
     distanceFrom: {
       lat: lat,
@@ -669,10 +684,10 @@ exports.basicHotelContent = async (req, res) => {
   };
 
   const payloadPolygonal = {
-    channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+    channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
     destinationCountryCode: null,
     filterBy: null,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     contentFields: ["basic", "masterfacilities"],
     circularRegion: null,
     rectangularRegion: null,
@@ -684,7 +699,7 @@ exports.basicHotelContent = async (req, res) => {
     hotelIds: null,
   };
 
-  if (!process.env.ZENTRUMHUB_API_KEY || !process.env.ZENTRUMHUB_ACCOUNT_ID) {
+  if (!ZENTRUMHUB_API_KEY || !ZENTRUMHUB_ACCOUNT_ID) {
     throw new Error("Required environment variables are not set.");
   }
 
@@ -763,7 +778,7 @@ exports.nextAsyncHotelData = async (req, res) => {
     });
   }
 
-  if (!process.env.ZENTRUMHUB_API_KEY || !process.env.ZENTRUMHUB_ACCOUNT_ID) {
+  if (!ZENTRUMHUB_API_KEY || !ZENTRUMHUB_ACCOUNT_ID) {
     throw new Error("Required environment variables are not set.");
   }
 
@@ -775,7 +790,7 @@ exports.nextAsyncHotelData = async (req, res) => {
     console.log("nextResultCall");
     try {
       const zentrumhubResponse = await axios.get(
-        `${process.env.ZENTRUMHUB_API_URL}/availability/async/${token}/results?nextResultsKey=${resultkey}`,
+        `${ZENTRUMHUB_API_URL}/availability/async/${token}/results?nextResultsKey=${resultkey}`,
         {
           headers: headers,
         }
@@ -889,8 +904,8 @@ exports.singleHotelData = async (req, res) => {
   const { id, ipAddress, correlationId } = req.body;
 
   const payload = {
-    channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
+    culture: ZENTRUMHUB_CULTURE,
     includeAllProviders: true,
     hotelIds: [id],
     filterBy: null,
@@ -971,14 +986,14 @@ exports.initRoomAndRatesToken = async (req, res) => {
   const totalRoomNights = calculateTotalRoomNights(checkIn, checkOut, rooms);
 
   const payload = {
-    channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+    channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
     currency: currency,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     checkIn: outputDate,
     checkOut: outputDate2,
     occupancies: occupancies,
-    nationality: process.env.ZENTRUMHUB_NATIONALITY,
-    countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
   };
 
   const headers = generateHeaders(ipAddress, correlationId);
@@ -991,7 +1006,7 @@ exports.initRoomAndRatesToken = async (req, res) => {
     console.log("line 145", payload);
     await axios
       .post(
-        `${process.env.ZENTRUMHUB_API_URL}/${HotelID}/roomsandrates`,
+        `${ZENTRUMHUB_API_URL}/${HotelID}/roomsandrates`,
         payload,
         {
           headers,
@@ -1112,14 +1127,14 @@ exports.initRoomAndRatesTokenRateHawk = async (req, res) => {
   const totalRoomNights = calculateTotalRoomNights(checkIn, checkOut, rooms);
 
   const payload = {
-    channelId: process.env.ZENTRUMHUB_WEB_CHANNEL_ID,
+    channelId: ZENTRUMHUB_WEB_CHANNEL_ID,
     currency: currency,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     checkIn: outputDate,
     checkOut: outputDate2,
     occupancies: occupancies,
-    nationality: process.env.ZENTRUMHUB_NATIONALITY,
-    countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
   };
 
   const headers = generateHeaders(ipAddress, correlationId);
@@ -1132,7 +1147,7 @@ exports.initRoomAndRatesTokenRateHawk = async (req, res) => {
     console.log("line 145", payload);
     await axios
       .post(
-        `${process.env.ZENTRUMHUB_API_URL}/${HotelID}/roomsandrates`,
+        `${ZENTRUMHUB_API_URL}/${HotelID}/roomsandrates`,
         payload,
         {
           headers,
@@ -1252,14 +1267,14 @@ exports.initalCallOfZentrumhubHotelBeds = async (req, res) => {
   const totalRoomNights = calculateTotalRoomNights(checkIn, checkOut, rooms);
 
   const payload = {
-    channelId: process.env.ZENTRUMHUB_HB_CHANNEL_ID,
+    channelId: ZENTRUMHUB_HB_CHANNEL_ID,
     currency: currency,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     checkIn: outputDate,
     checkOut: outputDate2,
     occupancies: occupancies,
-    nationality: process.env.ZENTRUMHUB_NATIONALITY,
-    countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
   };
 
   const headers = generateHeaders(ipAddress, correlationId);
@@ -1272,7 +1287,7 @@ exports.initalCallOfZentrumhubHotelBeds = async (req, res) => {
     console.log("line 145", payload);
     await axios
       .post(
-        `${process.env.ZENTRUMHUB_API_URL}/${HotelID}/roomsandrates`,
+        `${ZENTRUMHUB_API_URL}/${HotelID}/roomsandrates`,
         payload,
         {
           headers,
@@ -1372,7 +1387,7 @@ exports.priceCheckingRecommendation = async (req, res) => {
   const priceCheckingRecommendation = async () => {
     await axios
       .get(
-        `${process.env.ZENTRUMHUB_API_URL}/${id}/${roomtoken}/price/recommendation/${selectedRecommendation}`,
+        `${ZENTRUMHUB_API_URL}/${id}/${roomtoken}/price/recommendation/${selectedRecommendation}`,
         {
           headers: headers,
         }
@@ -1453,7 +1468,7 @@ exports.roomBookingZentrumhub = async (req, res) => {
   const zentrumhubBookingAPI = async () => {
     await axios
       .post(
-        `${process.env.ZENTRUMHUB_API_URL}/${hotelId}/${roomtoken}/book`,
+        `${ZENTRUMHUB_API_URL}/${hotelId}/${roomtoken}/book`,
         data,
         {
           headers: headers,
@@ -1541,10 +1556,10 @@ exports.hotelsForChatBot = async (req, res) => {
 
     //payload for the basic hotel api
     const payload = {
-      channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+      channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
       destinationCountryCode: null,
       filterBy: null,
-      culture: process.env.ZENTRUMHUB_CULTURE,
+      culture: ZENTRUMHUB_CULTURE,
       contentFields: ["basic", "masterfacilities"],
       circularRegion: null,
       rectangularRegion: null,
@@ -1555,10 +1570,10 @@ exports.hotelsForChatBot = async (req, res) => {
 
     //payload for the rates api
     const payloadRate = {
-      channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+      channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
       segmentId: null,
       currency: currency,
-      culture: process.env.ZENTRUMHUB_CULTURE,
+      culture: ZENTRUMHUB_CULTURE,
       checkIn: outputDate,
       checkOut: outputDate2,
       occupancies: occupancies,
@@ -1567,8 +1582,8 @@ exports.hotelsForChatBot = async (req, res) => {
       polygonalRegion: null,
       multiPolygonalRegion: null,
       hotelIds: hotelIds,
-      nationality: process.env.ZENTRUMHUB_NATIONALITY,
-      countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+      nationality: ZENTRUMHUB_NATIONALITY,
+      countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
       destinationCountryCode: null,
       filterBy: null,
     };
@@ -1616,7 +1631,7 @@ exports.hotelsForChatBot = async (req, res) => {
     const getToken = async () => {
       // Make the API call to zentrumhub with the same data
       const zentrumhubResponse = await axios.post(
-        `${process.env.ZENTRUMHUB_API_URL}/availability/init`,
+        `${ZENTRUMHUB_API_URL}/availability/init`,
         payloadRate,
         {
           headers: headers,
@@ -1638,7 +1653,7 @@ exports.hotelsForChatBot = async (req, res) => {
       await axios
         .get(
           `${
-            process.env.ZENTRUMHUB_API_URL
+            ZENTRUMHUB_API_URL
           }/availability/async/${token}/results${
             resultkey !== null ? "?nextResultsKey=" + resultkey : ""
           }`,
@@ -1883,10 +1898,10 @@ exports.hotelsForChatBotWithRoom = async (req, res) => {
 
     //payload for the basic hotel api
     const payload = {
-      channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+      channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
       destinationCountryCode: null,
       filterBy: null,
-      culture: process.env.ZENTRUMHUB_CULTURE,
+      culture: ZENTRUMHUB_CULTURE,
       contentFields: ["All"],
       circularRegion: null,
       rectangularRegion: null,
@@ -1897,14 +1912,14 @@ exports.hotelsForChatBotWithRoom = async (req, res) => {
 
     //payload for the rates api
     const payloadRate = {
-      channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+      channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
       currency: currency,
-      culture: process.env.ZENTRUMHUB_CULTURE,
+      culture: ZENTRUMHUB_CULTURE,
       checkIn: outputDate,
       checkOut: outputDate2,
       occupancies: occupancies,
-      nationality: process.env.ZENTRUMHUB_NATIONALITY,
-      countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+      nationality: ZENTRUMHUB_NATIONALITY,
+      countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
     };
 
     //creating the array for the hotel details and rates
@@ -1951,7 +1966,7 @@ exports.hotelsForChatBotWithRoom = async (req, res) => {
     const getAllRatesHotels = async (id) => {
       try {
         const response = await axios.post(
-          `${process.env.ZENTRUMHUB_API_URL}/${id}/roomsandrates`,
+          `${ZENTRUMHUB_API_URL}/${id}/roomsandrates`,
           payloadRate,
           {
             headers: headers,
@@ -2122,10 +2137,10 @@ exports.hotelsForChatBotBlockedMethod = async (req, res) => {
 
     //payload for the basic hotel api
     const payload = {
-      channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+      channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
       destinationCountryCode: null,
       filterBy: null,
-      culture: process.env.ZENTRUMHUB_CULTURE,
+      culture: ZENTRUMHUB_CULTURE,
       contentFields: ["basic", "masterfacilities"],
       circularRegion: null,
       rectangularRegion: null,
@@ -2136,10 +2151,10 @@ exports.hotelsForChatBotBlockedMethod = async (req, res) => {
 
     //payload for the rates api
     const payloadRate = {
-      channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+      channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
       segmentId: null,
       currency: currency,
-      culture: process.env.ZENTRUMHUB_CULTURE,
+      culture: ZENTRUMHUB_CULTURE,
       checkIn: outputDate,
       checkOut: outputDate2,
       occupancies: occupancies,
@@ -2148,8 +2163,8 @@ exports.hotelsForChatBotBlockedMethod = async (req, res) => {
       polygonalRegion: null,
       multiPolygonalRegion: null,
       hotelIds: hotelIds,
-      nationality: process.env.ZENTRUMHUB_NATIONALITY,
-      countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+      nationality: ZENTRUMHUB_NATIONALITY,
+      countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
       destinationCountryCode: null,
       filterBy: null,
     };
@@ -2198,7 +2213,7 @@ exports.hotelsForChatBotBlockedMethod = async (req, res) => {
       // Make the API call to zentrumhub with the same data
       try {
         const zentrumhubResponse = await axios.post(
-          `${process.env.ZENTRUMHUB_API_URL}/availability`,
+          `${ZENTRUMHUB_API_URL}/availability`,
           payloadRate,
           {
             headers: headers,
@@ -2319,8 +2334,8 @@ exports.singleHotelDataByName = async (req, res) => {
         .post(
           "https://nexus.prod.zentrumhub.com/api/content/hotelcontent/getHotelContent",
           {
-            channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
-            culture: process.env.ZENTRUMHUB_CULTURE,
+            channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
+            culture: ZENTRUMHUB_CULTURE,
             includeAllProviders: true,
             hotelIds: [hotelID],
             filterBy: null,
@@ -2427,14 +2442,14 @@ exports.initRoomAndRatesTokenByName = async (req, res) => {
   const totalRoomNights = calculateTotalRoomNights(checkIn, checkOut, rooms);
 
   const payload = {
-    channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+    channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
     currency: currency,
-    culture: process.env.ZENTRUMHUB_CULTURE,
+    culture: ZENTRUMHUB_CULTURE,
     checkIn: outputDate,
     checkOut: outputDate2,
     occupancies: occupancies,
-    nationality: process.env.ZENTRUMHUB_NATIONALITY,
-    countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
   };
 
   let roomAndRatesTokenAPICount = 0;
@@ -2442,7 +2457,7 @@ exports.initRoomAndRatesTokenByName = async (req, res) => {
   const getHotelContent = async (hotelID) => {
     await axios
       .post(
-        `${process.env.ZENTRUMHUB_API_URL}/${hotelID}/roomsandrates`,
+        `${ZENTRUMHUB_API_URL}/${hotelID}/roomsandrates`,
         payload,
         {
           headers,
@@ -2583,10 +2598,10 @@ exports.hotelsForGoogleBlockedMethod = async (req, res) => {
 
     //payload for the rates api
     const payloadRate = {
-      channelId: process.env.ZENTRUMHUB_HB_CHANNEL_ID,
+      channelId: ZENTRUMHUB_HB_CHANNEL_ID,
       segmentId: null,
       currency: "USD",
-      culture: process.env.ZENTRUMHUB_CULTURE,
+      culture: ZENTRUMHUB_CULTURE,
       checkIn: outputDate,
       checkOut: outputDate2,
       occupancies: [
@@ -2600,8 +2615,8 @@ exports.hotelsForGoogleBlockedMethod = async (req, res) => {
       polygonalRegion: null,
       multiPolygonalRegion: null,
       hotelIds: hotelIds,
-      nationality: process.env.ZENTRUMHUB_NATIONALITY,
-      countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+      nationality: ZENTRUMHUB_NATIONALITY,
+      countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
       destinationCountryCode: null,
       filterBy: null,
     };
@@ -2611,7 +2626,7 @@ exports.hotelsForGoogleBlockedMethod = async (req, res) => {
       // Make the API call to zentrumhub with the same data
       try {
         const zentrumhubResponse = await axios.post(
-          `${process.env.ZENTRUMHUB_API_URL}/availability`,
+          `${ZENTRUMHUB_API_URL}/availability`,
           payloadRate,
           {
             headers: headers,
@@ -2810,9 +2825,9 @@ exports.hotelsForGoogleBlockedMethodWithRooms = async (req, res) => {
 
     //payload for the rates api
     const payloadRate = {
-      channelId: process.env.ZENTRUMHUB_HB_CHANNEL_ID,
+      channelId: ZENTRUMHUB_HB_CHANNEL_ID,
       currency: "USD",
-      culture: process.env.ZENTRUMHUB_CULTURE,
+      culture: ZENTRUMHUB_CULTURE,
       checkIn: outputDate,
       checkOut: outputDate2,
       occupancies: [
@@ -2821,15 +2836,15 @@ exports.hotelsForGoogleBlockedMethodWithRooms = async (req, res) => {
           childAges: [],
         },
       ],
-      nationality: process.env.ZENTRUMHUB_NATIONALITY,
-      countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+      nationality: ZENTRUMHUB_NATIONALITY,
+      countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
     };
 
     //function to get the rates for each hotel
     const getAllRatesHotels = async (id) => {
       try {
         const response = await axios.post(
-          `${process.env.ZENTRUMHUB_API_URL}/${id}/roomsandrates`,
+          `${ZENTRUMHUB_API_URL}/${id}/roomsandrates`,
           payloadRate,
           {
             headers: headers,
@@ -3063,10 +3078,10 @@ exports.hotelsForGoogleHintMethod = async (req, res) => {
   try {
     //payload for the rates api
     const payloadRate = {
-      channelId: process.env.ZENTRUMHUB_LIVE_CHANNEL_ID,
+      channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
       segmentId: null,
       currency: "USD",
-      culture: process.env.ZENTRUMHUB_CULTURE,
+      culture: ZENTRUMHUB_CULTURE,
       checkIn: outputDate,
       checkOut: outputDate2,
       occupancies: [
@@ -3080,8 +3095,8 @@ exports.hotelsForGoogleHintMethod = async (req, res) => {
       polygonalRegion: null,
       multiPolygonalRegion: null,
       hotelIds: hotelIds,
-      nationality: process.env.ZENTRUMHUB_NATIONALITY,
-      countryOfResidence: process.env.ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+      nationality: ZENTRUMHUB_NATIONALITY,
+      countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
       destinationCountryCode: null,
       filterBy: null,
     };
@@ -3091,7 +3106,7 @@ exports.hotelsForGoogleHintMethod = async (req, res) => {
       // Make the API call to zentrumhub with the same data
       try {
         const zentrumhubResponse = await axios.post(
-          `${process.env.ZENTRUMHUB_API_URL}/availability`,
+          `${ZENTRUMHUB_API_URL}/availability`,
           payloadRate,
           {
             headers: headers,
@@ -3250,7 +3265,7 @@ exports.reviewsForTheHotel = async (req, res) => {
     const { city, hotelName } = req.body;
 
     const response = await axios.get(
-      `${process.env.TRIP_ADVISOR_API_URL}/api/get-locations?hotel=${hotelName}&city=${city}`
+      `${TRIP_ADVISOR_API_URL}/api/get-locations?hotel=${hotelName}&city=${city}`
     );
 
     if (response.data.data.length === 0) {
@@ -3264,7 +3279,7 @@ exports.reviewsForTheHotel = async (req, res) => {
 
     try {
       const response = await axios.get(
-        `${process.env.TRIP_ADVISOR_API_URL}/api/get-reviews/${firstResultID}`
+        `${TRIP_ADVISOR_API_URL}/api/get-reviews/${firstResultID}`
       );
 
       return res.status(200).json(response.data);
