@@ -6,6 +6,14 @@ const hotelRoutes  = require("./routes/routes");
 const rateLimit = require('express-rate-limit');
 const bodyParserXml = require('body-parser-xml');
 const bodyParser = require('body-parser');
+const { conn } = require('./config/db.config');
+
+conn.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+});
+
+
 const app = express();
 
 app.use(compression());

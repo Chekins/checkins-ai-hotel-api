@@ -2,9 +2,28 @@ require("dotenv").config();
 const axios = require("axios");
 const { setTimeout } = require("timers");
 const moment = require("moment");
+const { conn } = require("../config/db.config");
 
-const priceDroppingValue = 0.88;
-const priceReAddedValue = 0.20;
+const getThepriceDroppingValue = async () => {
+  const sql = `SELECT * FROM checkins_hotels_policy WHERE id = 1`;
+  const [rows] = await conn.promise().query(sql);
+  return rows[0].totalRate;
+};
+
+const getThepriceReaddedValue = async () => {
+  const sql = `SELECT * FROM checkins_hotels_policy WHERE id = 1`;
+  const [rows] = await conn.promise().query(sql);
+  return rows[0].checkoutRate;
+};
+
+const getThepriceIncreaseValue = async () => {
+  const sql = `SELECT * FROM checkins_hotels_policy WHERE id = 1`;
+  const [rows] = await conn.promise().query(sql);
+  return rows[0].publishedRate;
+};
+
+// const priceDroppingValue = 0.88;
+// const priceReAddedValue = 0.20;
 const priceIncreaseValue = 1.10;
 
 const NODE_ENV="production"
@@ -126,6 +145,10 @@ exports.initalCallOfZentrumhub = async (req, res) => {
 
   const getAllHotels = async (token) => {
     console.error("line 97", token);
+
+    const priceDroppingValue = await getThepriceDroppingValue();
+    const priceReAddedValue = await getThepriceReaddedValue();
+    const priceIncreaseValue = await getThepriceIncreaseValue();
 
     await axios
       .get(
@@ -427,6 +450,10 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
   const getAllHotels = async (token) => {
     console.error("line 97", token);
 
+    const priceDroppingValue = await getThepriceDroppingValue();
+    const priceReAddedValue = await getThepriceReaddedValue();
+    const priceIncreaseValue = await getThepriceIncreaseValue();
+
     await axios
       .get(
         `${ZENTRUMHUB_API_URL}/availability/async/${token}/results`,
@@ -472,7 +499,7 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
 
                 // Calculate the new total rate with the priceDroppingValue factor
                 const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
-                const newBaseRate = hotel.rate.baseRate * priceDroppingValue;
+                const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
 
                 // Calculate the fee as the difference between the original total rate and the new total rate
                 const feeAmount =
@@ -491,7 +518,7 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
 
                 // Modify totalRate and publishedRate
                 hotel.rate.totalRate = Math.ceil(newTotalRate);
-                // hotel.rate.baseRate = Math.ceil(newBaseRate);
+                hotel.rate.baseRate = Math.ceil(newBaseRate);
                 // Modify totalRate and publishedRate
                 return {
                   ...hotel,
@@ -537,7 +564,7 @@ exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
               // Modify totalRate and publishedRate
               // Calculate the new total rate with the priceDroppingValue factor
               const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
-              const newBaseRate = hotel.rate.baseRate * priceReAddedValue;
+              const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
 
               // Calculate the fee as the difference between the original total rate and the new total rate
               const feeAmount =
@@ -790,6 +817,11 @@ exports.nextAsyncHotelData = async (req, res) => {
   const nextResultCall = async () => {
     console.log("nextResultCall");
     try {
+
+      const priceDroppingValue = await getThepriceDroppingValue();
+      const priceReAddedValue = await getThepriceReaddedValue();
+      const priceIncreaseValue = await getThepriceIncreaseValue();
+
       const zentrumhubResponse = await axios.get(
         `${ZENTRUMHUB_API_URL}/availability/async/${token}/results?nextResultsKey=${resultkey}`,
         {
@@ -1004,6 +1036,11 @@ exports.initRoomAndRatesToken = async (req, res) => {
   let roomAndRatesTokenAPICount = 0;
 
   const getRoomData = async () => {
+
+    const priceDroppingValue = await getThepriceDroppingValue();
+    const priceReAddedValue = await getThepriceReaddedValue();
+    const priceIncreaseValue = await getThepriceIncreaseValue();
+
     console.log("line 145", payload);
     await axios
       .post(
@@ -1145,6 +1182,9 @@ exports.initRoomAndRatesTokenRateHawk = async (req, res) => {
   let roomAndRatesTokenAPICount = 0;
 
   const getRoomData = async () => {
+    const priceDroppingValue = await getThepriceDroppingValue();
+    const priceReAddedValue = await getThepriceReaddedValue();
+    const priceIncreaseValue = await getThepriceIncreaseValue();
     console.log("line 145", payload);
     await axios
       .post(
@@ -1386,6 +1426,9 @@ exports.priceCheckingRecommendation = async (req, res) => {
   let priceCheckingRecommendationCount = 0;
 
   const priceCheckingRecommendation = async () => {
+    const priceDroppingValue = await getThepriceDroppingValue();
+    const priceReAddedValue = await getThepriceReaddedValue();
+    const priceIncreaseValue = await getThepriceIncreaseValue();
     await axios
       .get(
         `${ZENTRUMHUB_API_URL}/${id}/${roomtoken}/price/recommendation/${selectedRecommendation}`,
@@ -2456,6 +2499,9 @@ exports.initRoomAndRatesTokenByName = async (req, res) => {
   let roomAndRatesTokenAPICount = 0;
 
   const getHotelContent = async (hotelID) => {
+    const priceDroppingValue = await getThepriceDroppingValue();
+    const priceReAddedValue = await getThepriceReaddedValue();
+    const priceIncreaseValue = await getThepriceIncreaseValue();
     await axios
       .post(
         `${ZENTRUMHUB_API_URL}/${hotelID}/roomsandrates`,
@@ -2478,7 +2524,7 @@ exports.initRoomAndRatesTokenByName = async (req, res) => {
 
           // Calculate the new total rate with the priceDroppingValue factor
           const newTotalRate = rate.totalRate * priceDroppingValue;
-          const newBaseRate = rate.baseRate * priceDroppingValue;
+          const newBaseRate = rate.baseRate * priceIncreaseValue;
 
           // Calculate the fee as the difference between the original total rate and the new total rate
           const feeAmount = rate.totalRate * priceReAddedValue;
@@ -2497,7 +2543,7 @@ exports.initRoomAndRatesTokenByName = async (req, res) => {
 
           // Modify totalRate and publishedRate
           rate.totalRate = Math.ceil(newTotalRate);
-          // rate.baseRate = Math.ceil(newBaseRate);
+          rate.baseRate = Math.ceil(newBaseRate);
 
           rate.dailyTotalRate = Math.ceil(pricePerRoomPerNight);
           rate.dailyPublishedRate = Math.ceil(pricePerRoomPerNightPublish);
