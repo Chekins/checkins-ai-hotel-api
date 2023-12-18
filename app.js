@@ -3,16 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const compression = require('compression');
 const hotelRoutes  = require("./routes/routes");
-const rateLimit = require('express-rate-limit');
 const bodyParserXml = require('body-parser-xml');
 const bodyParser = require('body-parser');
-const { conn } = require('./config/db.config');
-
-conn.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-});
-
 
 const app = express();
 
@@ -45,9 +37,6 @@ app.use((req, res, next) => {
 app.options('*', cors());
 
 app.use(cors(corsOptions));
-
-// Apply the rate limiting middleware to all requests
-// app.use(limiter);
 
 app.use(hotelRoutes.routes);
 
