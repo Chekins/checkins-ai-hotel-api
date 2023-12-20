@@ -23,6 +23,7 @@ const client = new CosmosClient(options)
 const ZENTRUMHUB_API_URL="https://nexus.prod.zentrumhub.com/api/hotel"
 const ZENTRUMHUB_API_KEY="e7813f66-2ac8-4f64-a7cd-6ab58e0e5194"
 const ZENTRUMHUB_ACCOUNT_ID="chekins-live-account"
+const ZENTRUMHUB_LIVE_CHANNEL_ID="ci-live-channel"
 const ZENTRUMHUB_HB_CHANNEL_ID="ci-hbb2clive-channel"
 const ZENTRUMHUB_COUNTRY_OF_RESIDENCE="US"
 const ZENTRUMHUB_NATIONALITY="US"
