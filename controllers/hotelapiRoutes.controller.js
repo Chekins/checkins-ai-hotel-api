@@ -90,6 +90,11 @@ const postRoomDataToAPI = async (payload , HotelID , headers) => {
     if (data?.error || data === '') {
       throw new Error('Error in API response');
     }
+    data?.hotel?.rates.forEach((rate) => {
+
+      const newBaseRate = rate.baseRate * 1.1;
+      rate.baseRate = Math.ceil(newBaseRate);
+    });
 
     return data;
   } catch (error) {
