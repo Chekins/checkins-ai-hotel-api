@@ -120,10 +120,8 @@ exports.singleHotelData = async (req, res) => {
 
   const singleHotelData = async () => {
     try {
-      const response = await axiosRetry(axios, {
-        retries: 3,
-        retryDelay: axiosRetry.exponentialDelay,
-      }).post(
+      // axiosRetry(axios, { retries: 3 });
+      const response = await axios.post(
         "https://nexus.prod.zentrumhub.com/api/content/hotelcontent/getHotelContent",
         payload,
         {
