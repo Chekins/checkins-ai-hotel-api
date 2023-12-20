@@ -1,7 +1,11 @@
 const express = require("express");
 
 const {
+  initalCallOfZentrumhub,
+  basicHotelContent,
+  nextAsyncHotelData,
   singleHotelData,
+  initalCallOfZentrumhubRateHawk,
   initRoomAndRatesToken,
   priceCheckingRecommendation,
   roomBookingZentrumhub,
@@ -16,6 +20,15 @@ router.get("/", (req, res) => {
 });
 
 //routers for hotel api
+router.post("/api/v1/hotels/availability", initalCallOfZentrumhub);
+//RateHawk Routes
+router.post("/api/v1/hotels/availability/rh", initalCallOfZentrumhubRateHawk);
+router.post(
+  "/api/v1/hotels/content/hotelcontent/getHotelContent",
+  basicHotelContent
+);
+router.post("/api/v1/hotels/availability/async/:token/:resultkey", nextAsyncHotelData);
+
 router.post("/api/v1/content/individualHotel/getHotelContent", singleHotelData);
 router.post("/api/v1/rates/individualHotel/roomAndRates/availability/init", initRoomAndRatesToken);
 router.post("/api/v1/rates/individualHotel/roomAndRates/availability", priceCheckingRecommendation);

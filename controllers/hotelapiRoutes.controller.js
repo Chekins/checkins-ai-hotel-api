@@ -29,6 +29,11 @@ const ZENTRUMHUB_COUNTRY_OF_RESIDENCE="US"
 const ZENTRUMHUB_NATIONALITY="US"
 const ZENTRUMHUB_CULTURE="en-us"
 
+
+const priceDroppingValue = 1;
+const priceReAddedValue = 1;
+const priceIncreaseValue = 1.1;
+
 //formatting the date to YYYY-MM-DD format to match the API requirement
 const formatDate = (date) => {
   const momentDate = moment(date).utcOffset(0, true);
@@ -107,6 +112,706 @@ const createDocumentInCosmos = async (document) => {
   await container.items.create(document);
 };
 
+
+//initial call to the firstcall of the zenrumhuh API to get the token , result key and hotel rates
+exports.initalCallOfZentrumhub = async (req, res) => {
+  const startDate = req.body.searchParams.startDate;
+  const endDate = req.body.searchParams.endDate;
+  const occupancies = req.body.searchParams.occupancies;
+  const lat = req.body.searchParams.location.coordinates.lat;
+  const long = req.body.searchParams.location.coordinates.long;
+  const currency = req.body.currency;
+  const ipAddress = req.body.ipAddress;
+  const correlationId = req.body.correlationId;
+
+  //calculate total days to calculate the total room nights rate
+  const diffInDays = moment(endDate).diff(moment(startDate), "days");
+
+  const outputDate = formatDate(startDate);
+  const outputDate2 = formatDate(endDate);
+  const rooms = req.body.searchParams.occupancies.length;
+  const totalRoomNights = calculateTotalRoomNights(startDate, endDate, rooms);
+
+  const payload = {
+    channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
+    segmentId: null,
+    currency: currency,
+    culture: ZENTRUMHUB_CULTURE,
+    checkIn: outputDate,
+    checkOut: outputDate2,
+    occupancies: occupancies,
+    circularRegion: {
+      centerLat: lat,
+      centerLong: long,
+      radiusInKm: 30,
+    },
+    rectangularRegion: null,
+    polygonalRegion: null,
+    multiPolygonalRegion: null,
+    hotelIds: null,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    destinationCountryCode: null,
+    filterBy: null,
+  };
+
+  const headers = generateHeaders(ipAddress, correlationId);
+
+  let nextKey = null;
+  let noOfCallingTimes = 0;
+
+  const getAllHotels = async (token) => {
+    console.error("line 97", token);
+
+    await axios
+      .get(
+        `${ZENTRUMHUB_API_URL}/availability/async/${token}/results`,
+        { headers: headers }
+      )
+      .then((response) => {
+        const data = response.data;
+
+        if (data.status === "InProgress") {
+          if (data.hotels.length === 0) {
+            //calling the same api again if the response is empty with the 500 miliseconds delay
+            setTimeout(() => {
+              getAllHotels(token);
+            }, 500);
+          } else {
+            data.noofrooms = rooms;
+            data.noofdays = diffInDays;
+            data.totalRoomNights = totalRoomNights;
+            data.beforeCalculations = data.hotels;
+            const modifiedData = {
+              ...data,
+              hotels: data.hotels.map((hotel) => {
+                let pricePerRoomPerNight;
+                let pricePerRoomPerNightPublish;
+                let pricefortotalrooms;
+                if (hotel.rate.providerName === "RateHawk") {
+                  pricePerRoomPerNight =
+                  (hotel.rate.totalRate / totalRoomNights) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                    hotel.rate.baseRate / totalRoomNights;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                    totaRateCeil * priceDroppingValue;
+                }else {
+                  pricePerRoomPerNight =
+                    (hotel.rate.totalRate / diffInDays) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                      hotel.rate.baseRate / diffInDays;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                      totaRateCeil * rooms * priceDroppingValue;
+                }
+                // Calculate the new total rate with the priceDroppingValue factor
+                const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
+                const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
+
+
+                // Modify totalRate and publishedRate
+                hotel.rate.totalRate = Math.ceil(newTotalRate);
+                hotel.rate.baseRate = Math.ceil(newBaseRate);
+
+                return {
+                  ...hotel,
+                  rate: {
+                    ...hotel.rate,
+                    dailyTotalRate: Math.ceil(pricePerRoomPerNight),
+                    dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish * priceIncreaseValue),
+                    totalTripRate: Math.ceil(pricefortotalrooms),
+                  },
+                };
+              }),
+            };
+            res.status(200).json(modifiedData);
+          }
+        } else if (data.status === "Completed") {
+          data.noofrooms = rooms;
+          data.noofdays = diffInDays;
+          data.totalRoomNights = totalRoomNights;
+
+          const modifiedData = {
+            ...data,
+            hotels: data.hotels.map((hotel) => {
+              let pricePerRoomPerNight;
+                let pricePerRoomPerNightPublish;
+                let pricefortotalrooms;
+                if (hotel.rate.providerName === "RateHawk") {
+                  pricePerRoomPerNight =
+                  (hotel.rate.totalRate / totalRoomNights) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                    hotel.rate.baseRate / totalRoomNights;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                    totaRateCeil * priceDroppingValue;
+                }else {
+                  pricePerRoomPerNight =
+                    (hotel.rate.totalRate / diffInDays) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                      hotel.rate.baseRate / diffInDays;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                      totaRateCeil * rooms * priceDroppingValue;
+                }
+
+              // Modify totalRate and publishedRate
+              // Calculate the new total rate with the priceDroppingValue factor
+              const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
+              const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
+
+              // Modify totalRate and publishedRate
+              hotel.rate.totalRate = Math.ceil(newTotalRate);
+              hotel.rate.baseRate = Math.ceil(newBaseRate);
+
+              return {
+                ...hotel,
+                rate: {
+                  ...hotel.rate,
+                  dailyTotalRate: Math.ceil(pricePerRoomPerNight),
+                  dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish * priceIncreaseValue),
+                  totalTripRate: Math.ceil(pricefortotalrooms),
+                },
+              };
+            }),
+          };
+          res.status(200).json(modifiedData);
+        }
+      })
+      .catch((error) => {
+        if (noOfCallingTimes < 3) {
+          noOfCallingTimes++;
+          console.error("Calling the api with nextresultkey again", nextKey);
+
+          //calling the same api again if failed to call the api with the 500 miliseconds delay
+          setTimeout(() => {
+            getAllHotels(token);
+          }, 500);
+        } else {
+          console.error("line 89", error);
+          //sending the empty response if the api failed to call three times
+          res.status(500).json({
+            hotels: [],
+            token: token,
+            error: "There is no result even calling the api three times",
+          });
+        }
+      });
+  };
+
+  const initialCall = async () => {
+    try {
+      const zentrumhubResponse = await axios.post(
+        `${ZENTRUMHUB_API_URL}/availability/init`,
+        payload,
+        {
+          headers: headers,
+        }
+      );
+      console.log(zentrumhubResponse);
+
+      if (zentrumhubResponse.data.token) {
+        setTimeout(() => {
+          getAllHotels(zentrumhubResponse.data.token);
+        }, 1500);
+      } else {
+        res.status(500).json({
+          hotels: [],
+          error:
+            "An error occurred while creating a token. Please try again later",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({
+        hotels: [],
+        error:
+          "An error occurred while creating a token. Please try again later",
+        data: err.data,
+      });
+    }
+  };
+
+  try {
+    await initialCall();
+  } catch (err) {
+    for (let i = 0; i < 3; i++) {
+      try {
+        await initialCall();
+        break;
+      } catch (err) {
+        if (i === 2) {
+          res.status(500).json({
+            hotels: [],
+            error:
+              "An error occurred while creating a token. Please try again later",
+            data: err.data,
+          });
+          console.log(err.data);
+        }
+      }
+    }
+  }
+};
+
+//initial call to the firstcall for the ratehawk of the zenrumhuh API to get the token , result key and hotel rates
+exports.initalCallOfZentrumhubRateHawk = async (req, res) => {
+  const startDate = req.body.searchParams.startDate;
+  const endDate = req.body.searchParams.endDate;
+  const occupancies = req.body.searchParams.occupancies;
+  const lat = req.body.searchParams.location.coordinates.lat;
+  const long = req.body.searchParams.location.coordinates.long;
+  const currency = req.body.currency;
+  const ipAddress = req.body.ipAddress;
+  const correlationId = req.body.correlationId;
+
+  //calculate total days to calculate the total room nights rate
+  const diffInDays = moment(endDate).diff(moment(startDate), "days");
+
+  const outputDate = formatDate(startDate);
+  const outputDate2 = formatDate(endDate);
+  const rooms = req.body.searchParams.occupancies.length;
+  const totalRoomNights = calculateTotalRoomNights(startDate, endDate, rooms);
+
+  const payload = {
+    channelId: ZENTRUMHUB_HB_CHANNEL_ID,
+    segmentId: null,
+    currency: currency,
+    culture: ZENTRUMHUB_CULTURE,
+    checkIn: outputDate,
+    checkOut: outputDate2,
+    occupancies: occupancies,
+    circularRegion: {
+      centerLat: lat,
+      centerLong: long,
+      radiusInKm: 30,
+    },
+    rectangularRegion: null,
+    polygonalRegion: null,
+    multiPolygonalRegion: null,
+    hotelIds: null,
+    nationality: ZENTRUMHUB_NATIONALITY,
+    countryOfResidence: ZENTRUMHUB_COUNTRY_OF_RESIDENCE,
+    destinationCountryCode: null,
+    filterBy: null,
+  };
+
+
+  const headers = generateHeaders(ipAddress, correlationId);
+
+  let nextKey = null;
+  let noOfCallingTimes = 0;
+
+  const getAllHotels = async (token) => {
+    console.error("line 97", token);
+
+    await axios
+      .get(
+        `${ZENTRUMHUB_API_URL}/availability/async/${token}/results`,
+        { headers: headers }
+      )
+      .then((response) => {
+        const data = response.data;
+
+        if (data.status === "InProgress") {
+          if (data.hotels.length === 0) {
+            //calling the same api again if the response is empty with the 500 miliseconds delay
+            setTimeout(() => {
+              getAllHotels(token);
+            }, 500);
+          } else {
+            data.noofrooms = rooms;
+            data.noofdays = diffInDays;
+            data.totalRoomNights = totalRoomNights;
+            data.beforeCalculations = data.hotels;
+            const modifiedData = {
+              ...data,
+              hotels: data.hotels.map((hotel) => {
+                let pricePerRoomPerNight;
+                let pricePerRoomPerNightPublish;
+                let pricefortotalrooms;
+                if (hotel.rate.providerName === "RateHawk") {
+                  pricePerRoomPerNight =
+                  (hotel.rate.totalRate / totalRoomNights) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                    hotel.rate.baseRate / totalRoomNights;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                    totaRateCeil * priceDroppingValue;
+                }else {
+                  pricePerRoomPerNight =
+                    (hotel.rate.totalRate / diffInDays) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                      hotel.rate.baseRate / diffInDays;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                      totaRateCeil * rooms * priceDroppingValue;
+                }
+
+                // Calculate the new total rate with the priceDroppingValue factor
+                const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
+                const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
+
+                // Modify totalRate and publishedRate
+                hotel.rate.totalRate = Math.ceil(newTotalRate);
+                hotel.rate.baseRate = Math.ceil(newBaseRate);
+                // Modify totalRate and publishedRate
+                return {
+                  ...hotel,
+                  rate: {
+                    ...hotel.rate,
+                    dailyTotalRate: Math.ceil(pricePerRoomPerNight),
+                    dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish),
+                    totalTripRate: Math.ceil(pricefortotalrooms),
+                  },
+                };
+              }),
+            };
+            res.status(200).json(modifiedData);
+          }
+        } else if (data.status === "Completed") {
+          data.noofrooms = rooms;
+          data.noofdays = diffInDays;
+          data.totalRoomNights = totalRoomNights;
+
+          const modifiedData = {
+            ...data,
+            hotels: data.hotels.map((hotel) => {
+              let pricePerRoomPerNight;
+                let pricePerRoomPerNightPublish;
+                let pricefortotalrooms;
+                if (hotel.rate.providerName === "RateHawk") {
+                  pricePerRoomPerNight =
+                  (hotel.rate.totalRate / totalRoomNights) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                    hotel.rate.baseRate / totalRoomNights;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                    totaRateCeil * priceDroppingValue;
+                }else {
+                  pricePerRoomPerNight =
+                    (hotel.rate.totalRate / diffInDays) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                      hotel.rate.baseRate / diffInDays;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                      totaRateCeil * rooms * priceDroppingValue;
+                }
+              // Modify totalRate and publishedRate
+              // Calculate the new total rate with the priceDroppingValue factor
+              const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
+              const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
+
+
+              // Modify totalRate and publishedRate
+              hotel.rate.totalRate = Math.ceil(newTotalRate);
+              hotel.rate.baseRate = Math.ceil(newBaseRate);
+              return {
+                ...hotel,
+                rate: {
+                  ...hotel.rate,
+                  dailyTotalRate: Math.ceil(pricePerRoomPerNight),
+                  dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish),
+                  totalTripRate: Math.ceil(pricefortotalrooms),
+                },
+              };
+            }),
+          };
+          res.status(200).json(modifiedData);
+        }
+      })
+      .catch((error) => {
+        if (noOfCallingTimes < 3) {
+          noOfCallingTimes++;
+          console.error("Calling the api with nextresultkey again", nextKey);
+
+          //calling the same api again if failed to call the api with the 500 miliseconds delay
+          setTimeout(() => {
+            getAllHotels(token);
+          }, 500);
+        } else {
+          console.error("line 89", error);
+          //sending the empty response if the api failed to call three times
+          res.status(500).json({
+            hotels: [],
+            token: token,
+            error: "There is no result even calling the api three times",
+          });
+        }
+      });
+  };
+
+  const initialCall = async () => {
+    try {
+      const zentrumhubResponse = await axios.post(
+        `${ZENTRUMHUB_API_URL}/availability/init`,
+        payload,
+        {
+          headers: headers,
+        }
+      );
+      console.log(zentrumhubResponse);
+
+      if (zentrumhubResponse.data.token) {
+        setTimeout(() => {
+          getAllHotels(zentrumhubResponse.data.token);
+        }, 1500);
+      } else {
+        res.status(500).json({
+          hotels: [],
+          error:
+            "An error occurred while creating a token. Please try again later",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({
+        hotels: [],
+        error:
+          "An error occurred while creating a token. Please try again later",
+        data: err.data,
+      });
+    }
+  };
+
+  try {
+    await initialCall();
+  } catch (err) {
+    for (let i = 0; i < 3; i++) {
+      try {
+        await initialCall();
+        break;
+      } catch (err) {
+        if (i === 2) {
+          res.status(500).json({
+            hotels: [],
+            error:
+              "An error occurred while creating a token. Please try again later",
+            data: err.data,
+          });
+          console.log(err.data);
+        }
+      }
+    }
+  }
+};
+
+//get the basic hotel content
+exports.basicHotelContent = async (req, res) => {
+  const lat = req.body?.searchParams?.location?.coordinates?.lat;
+  const long = req.body?.searchParams?.location?.coordinates?.long;
+  const ipAddress = req.body.ipAddress;
+  const correlationId = req.body.correlationId;
+
+  const payload = {
+    channelId: ZENTRUMHUB_LIVE_CHANNEL_ID,
+    destinationCountryCode: null,
+    filterBy: null,
+    culture: ZENTRUMHUB_CULTURE,
+    contentFields: ["basic", "masterfacilities"],
+    distanceFrom: {
+      lat: lat,
+      long: long,
+    },
+    circularRegion: {
+      centerLat: lat,
+      centerLong: long,
+      radiusInKm: 30,
+    },
+    rectangularRegion: null,
+    polygonalRegion: null,
+    multiPolygonalRegion: null,
+    hotelIds: null,
+  };
+
+ 
+  if (!ZENTRUMHUB_API_KEY || !ZENTRUMHUB_ACCOUNT_ID) {
+    throw new Error("Required environment variables are not set.");
+  }
+
+  const headers = generateHeaders(ipAddress, correlationId);
+
+  let getAllHotelsCount = 0;
+
+  const getAllHotels = async () => {
+    console.log("count", getAllHotelsCount);
+    await axios
+      .post(
+        "https://nexus.prod.zentrumhub.com/api/content/hotelcontent/getHotelContent",
+        payload,
+        {
+          headers: headers,
+        }
+      )
+      .then((response) => {
+        console.log("response", response.data);
+        res.json(response.data);
+      })
+      .catch((error) => {
+        if (getAllHotelsCount < 3) {
+          getAllHotelsCount++;
+          getAllHotels();
+        } else {
+          res.json(error);
+        }
+        // getAllHotels();
+      });
+  };
+
+  try {
+    // Make the API call to zentrumhub with the same data
+    await getAllHotels();
+  } catch (error) {
+    for (let i = 0; i < 3; i++) {
+      try {
+        await getAllHotels();
+        break;
+      } catch (err) {
+        if (i === 2) {
+          res.status(500).json({
+            hotels: [],
+            error:
+              "An error occurred while getting the hotel content. Please try again later",
+            data: err.data,
+          });
+          console.log(err.data);
+        }
+      }
+    }
+  }
+};
+
+//function for the nextresult key api
+exports.nextAsyncHotelData = async (req, res) => {
+  const { token, resultkey } = req.params;
+  const { ipAddress, correlationId, totalRoomNights, noofrooms } = req.body;
+  const diffInDays = req.body.noofdays;
+
+  console.log(
+    "line 15",
+    token,
+    resultkey,
+    ipAddress,
+    correlationId,
+    totalRoomNights,
+    noofrooms,
+    diffInDays
+  );
+  if (!token || !resultkey) {
+    res.status(500).json({
+      hotels: [],
+      error: "Token or resultkey is missing",
+    });
+  }
+
+  if (!ZENTRUMHUB_API_KEY || !ZENTRUMHUB_ACCOUNT_ID) {
+    throw new Error("Required environment variables are not set.");
+  }
+
+  const headers = generateHeaders(ipAddress, correlationId);
+
+  console.log("inital");
+
+  const nextResultCall = async () => {
+    console.log("nextResultCall");
+    try {
+
+      const zentrumhubResponse = await axios.get(
+        `${ZENTRUMHUB_API_URL}/availability/async/${token}/results?nextResultsKey=${resultkey}`,
+        {
+          headers: headers,
+        }
+      );
+
+      const data = zentrumhubResponse.data;
+      console.log(data)
+      data.noofrooms = noofrooms;
+      data.noofdays = diffInDays;
+      data.totalRoomNights = totalRoomNights;
+      // data.beforeCalculations = data.hotels;
+
+      const modifiedData = {
+        ...data,
+        hotels: data.hotels.map((hotel) => {
+          let pricePerRoomPerNight;
+                let pricePerRoomPerNightPublish;
+                let pricefortotalrooms;
+                if (hotel.rate.providerName === "RateHawk") {
+                  pricePerRoomPerNight =
+                  (hotel.rate.totalRate / totalRoomNights) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                    hotel.rate.baseRate / totalRoomNights;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                    totaRateCeil * priceDroppingValue;
+                }else {
+                  pricePerRoomPerNight =
+                    (hotel.rate.totalRate / diffInDays) * priceDroppingValue ;
+                  pricePerRoomPerNightPublish =
+                      hotel.rate.baseRate / diffInDays;
+                  const totaRateCeil = Math.ceil(hotel.rate.totalRate);
+                  pricefortotalrooms =
+                      totaRateCeil * noofrooms * priceDroppingValue;
+                }
+          // Modify totalRate and publishedRate
+          // Calculate the new total rate with the priceDroppingValue factor
+          const newTotalRate = hotel.rate.totalRate * priceDroppingValue;
+          const newBaseRate = hotel.rate.baseRate * priceIncreaseValue;
+
+          // Modify totalRate and publishedRate
+          hotel.rate.totalRate = Math.ceil(newTotalRate);
+          hotel.rate.baseRate = Math.ceil(newBaseRate);
+
+          return {
+            ...hotel,
+            rate: {
+              ...hotel.rate,
+              dailyTotalRate: Math.ceil(pricePerRoomPerNight),
+              dailyPublishedRate: Math.ceil(pricePerRoomPerNightPublish * priceIncreaseValue),
+              totalTripRate: Math.ceil(pricefortotalrooms),
+            },
+          };
+        }),
+      };
+      res.status(200).json(modifiedData);
+    } catch (err) {
+      res.status(500).json({
+        hotels: [],
+        error:
+          "An error occurred while getting the rates from the nextresultkey. Please try again later",
+        data: err.data,
+        token : token ,
+        resultkey : resultkey
+      });
+      console.log(err)
+    }
+  };
+
+  try {
+    // Make the API call to zentrumhub with the same data
+    await nextResultCall();
+  } catch (error) {
+    for (let i = 0; i < 3; i++) {
+      try {
+        await nextResultCall();
+        break;
+      } catch (err) {
+        if (i === 2) {
+          res.status(500).json({
+            hotels: [],
+            error:
+              "An error occurred while getting the rates from the nextresultkey. Please try again later",
+            data: err.data,
+            token : token ,
+            resultkey : resultkey
+          });
+          console.log(err.data);
+        }
+      }
+    }
+  }
+};
 
 
 //function for the single hotel data
