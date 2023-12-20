@@ -564,7 +564,7 @@ exports.hotelsForGoogleBlockedMethodWithRooms = async (req, res) => {
                                     : `<Baserate currency="USD">${totalRateCeil.toFixed(
                                         2
                                       )}</Baserate>
-                                <OtherFees currency="USD">20</OtherFees>`
+                               `
                                 }
                               </Result>`;
                   } else {
